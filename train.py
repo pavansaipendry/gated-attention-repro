@@ -50,7 +50,7 @@ def estimate_loss(model, splits, block_size, batch_size, device, eval_iters=50):
 
 def train_one(variant, cfg_kwargs, train_data, val_data, device, args):
     out_dir = args.out_dir
-    torch.manual_seed(1337)  # same init/data order for a fair comparison
+    torch.manual_seed(args.seed)  # same seed across variants -> fair comparison
     config = GPTConfig(gate_attn=(variant == "gated"), **cfg_kwargs)
     model = GPT(config).to(device)
     print(
@@ -129,6 +129,7 @@ def main():
     p.add_argument("--n_head", type=int, default=4)
     p.add_argument("--n_embd", type=int, default=128)
     p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--out_dir", default=DEFAULT_OUT_DIR)
     args = p.parse_args()
 

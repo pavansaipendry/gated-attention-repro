@@ -206,6 +206,31 @@ class GPT(nn.Module):
         return maps
 
     @torch.no_grad()
+    def gate_activations(self, idx):
+        """Collect the sigmoid gate values g = sigmoid(W_g x) from every layer.
+
+        Returns a list (length n_layer) of tensors (B, T, C), or [] if this model
+        has no gate (baseline). Used by sparsity.py to test the paper's
+        'query-dependent sparsity' claim. Implemented with forward hooks so the
+        normal forward path is untouched.
+        """
+        if not self.config.gate_attn:
+            return []
+        gates = []
+        handles = []
+        for block in self.transformer.h:
+            h = block.attn.gate.register_forward_hook(
+                lambda m, inp, out: gates.append(torch.sigmoid(out).detach())
+            )
+            handles.append(h)
+        try:
+            self(idx)  # hooks fire in layer order during the forward pass
+        finally:
+            for h in handles:
+                h.remove()
+        return gates
+
+    @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         for _ in range(max_new_tokens):
             idx_cond = idx[:, -self.config.block_size:]
