@@ -1,0 +1,22 @@
+# data (downloaded on demand; enwik8 is ~100MB)
+data/
+
+# working outputs from local/remote runs (curated copies live in results/)
+out/
+out_big/
+out_enwik8/
+figures/
+figures_big/
+figures_enwik8/
+
+# model checkpoints (large)
+*.pt
+
+# logs / archives
+*.log
+*.tgz
+
+# python
+__pycache__/
+*.pyc
+.venv/
